@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stres Dostu AI — Demo</title>
+  <style>
+    :root{--bg:#f7fafc;--card:#ffffff;--accent:#6c8cff;--muted:#6b7280}
+    body{font-family:Inter,ui-sans-serif,system-ui,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;color:#111}
+    header{background:linear-gradient(90deg,#f0f6ff,white);padding:24px;border-bottom:1px solid #eef2ff}
+    .container{max-width:980px;margin:28px auto;padding:0 18px}
+    h1{margin:0;font-size:22px}
+    p.lead{color:var(--muted);margin:6px 0 0}
+
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:22px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(12,18,40,0.04)}
+
+    /* Chat area */
+    .chat-wrap{display:flex;flex-direction:column;height:560px}
+    .messages{flex:1;overflow:auto;padding:12px;gap:8px;display:flex;flex-direction:column}
+    .msg{max-width:78%;padding:10px 12px;border-radius:12px}
+    .msg.user{align-self:flex-end;background:#e6f0ff}
+    .msg.bot{align-self:flex-start;background:#f3f4f6}
+    .chat-input{display:flex;gap:8px;margin-top:12px}
+    .chat-input input{flex:1;padding:12px;border-radius:999px;border:1px solid #e6e9ef}
+    .btn{background:var(--accent);color:white;padding:10px 14px;border-radius:999px;border:none;cursor:pointer}
+
+    /* Cat area */
+    .cat-area{text-align:center}
+    .cat-card{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .mood-bar{width:200px;height:10px;background:#eef2ff;border-radius:999px;overflow:hidden}
+    .mood-fill{height:100%;background:linear-gradient(90deg,#ffb86b,#6c8cff);width:70%}
+    .small{font-size:13px;color:var(--muted)}
+
+    footer{max-width:980px;margin:18px auto;padding:12px 18px;color:var(--muted);font-size:13px}
+
+    @media(max-width:880px){.grid{grid-template-columns:1fr}.cat-area{order:-1}}
+  </style>
+  <!-- Lottie player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Stres Dostu AI — Demo</h1>
+      <p class="lead">Ücretsiz demo: sohbet et, kedini sev, ruh halini takip et. (Gerçek API anahtarı ve backend bağlandıktan sonra daha fazlası çalışır.)</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <!-- Chat column -->
+      <section class="card">
+        <h3>Sohbet</h3>
+        <div class="chat-wrap">
+          <div id="messages" class="messages"></div>
+          <div class="chat-input">
+            <input id="inputMsg" placeholder="Dertleşmek ister misin? (ör. "Bugün çok stresliyim")" />
+            <button id="sendBtn" class="btn">Gönder</button>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted)">Günlük ücretsiz: 3 sohbet. (Demo)</div>
+        </div>
+      </section>
+
+      <!-- Cat column -->
+      <aside class="card cat-area">
+        <div class="cat-card">
+          <!-- Lottie placeholder; replace src with your chosen Lottie JSON urls -->
+          <lottie-player id="catLottie" src="https://assets3.lottiefiles.com/packages/lf20_jmBauI.json"  background="transparent"  speed="1"  style="width:220px; height:220px;"  loop autoplay></lottie-player>
+
+          <div>
+            <div style="font-weight:600" id="catName">Minnoş</div>
+            <div class="small">Senin sanal kedin — ismini değiştirebilirsin.</div>
+          </div>
+
+          <div style="width:100%;display:flex;flex-direction:column;align-items:center;margin-top:8px">
+            <div class="mood-bar" aria-hidden>
+              <div id="moodFill" class="mood-fill" style="width:70%"></div>
+            </div>
+            <div class="small" style="margin-top:6px">Mood: <span id="moodPct">70</span>/100</div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="petBtn" class="btn" style="background:#9ad66b">Sev</button>
+            <button id="renameBtn" class="btn" style="background:#ffd166">İsim değiştir</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    Demo. Bu sürüm backend çağrısı yapmaz — gerçek sohbet için kendi /api/chat endpoint'inizi bağlayın ve OpenAI API anahtarınızı backend'de saklayın. Uygulama terapi yerine geçmez.
+  </footer>
+
+  <script>
+    // Basit demo client-side state — gerçekte Firestore ya da başka DB kullan
+    const state = {
+      cat: JSON.parse(localStorage.getItem('cat')) || { name: 'Minnoş', mood: 70 },
+      dailyCount: Number(localStorage.getItem('dailyCount') || 0)
+    }
+
+    const messagesEl = document.getElementById('messages')
+    const inputEl = document.getElementById('inputMsg')
+    const sendBtn = document.getElementById('sendBtn')
+    const catNameEl = document.getElementById('catName')
+    const moodFillEl = document.getElementById('moodFill')
+    const moodPct = document.getElementById('moodPct')
+    const petBtn = document.getElementById('petBtn')
+    const renameBtn = document.getElementById('renameBtn')
+    const catLottie = document.getElementById('catLottie')
+
+    function renderCat(){
+      catNameEl.textContent = state.cat.name
+      const pct = Math.max(0, Math.min(100, state.cat.mood))
+      moodFillEl.style.width = pct + '%'
+      moodPct.textContent = pct
+
+      // Mood'a göre Lottie değiştir (örnek URL'leri değiştirin)
+      if(pct > 70){
+        catLottie.load('https://assets3.lottiefiles.com/packages/lf20_jmBauI.json') // happy
+      } else if(pct > 35){
+        catLottie.load('https://assets8.lottiefiles.com/packages/lf20_touohxv0.json') // neutral
+      } else {
+        catLottie.load('https://assets7.lottiefiles.com/packages/lf20_p8bfn5to.json') // sad
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem('cat', JSON.stringify(state.cat))
+      localStorage.setItem('dailyCount', state.dailyCount)
+    }
+
+    function addMessage(text, from='bot'){
+      const div = document.createElement('div')
+      div.className = 'msg ' + (from === 'user' ? 'user' : 'bot')
+      div.textContent = text
+      messagesEl.appendChild(div)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    sendBtn.addEventListener('click', async ()=>{
+      const text = inputEl.value.trim()
+      if(!text) return
+
+      // Demo: lokal bot cevabı. Gerçek kullanımda /api/chat endpoint'ine POST yapın.
+      addMessage(text, 'user')
+      inputEl.value = ''
+
+      // Simule bot gecikmesi
+      addMessage('Yazıyor...', 'bot')
+      await new Promise(r=>setTimeout(r, 900))
+      messagesEl.lastChild.textContent = 'Bunu duyduğum için üzüldüm. Birkaç nefes egzersizi yapalım: derin nefes al 4, tut 4, ver 6. İstersen devam edelim.'
+
+      // Kediyi besle / motivasyon artışı
+      state.cat.mood = Math.min(100, state.cat.mood + 6)
+      state.dailyCount = state.dailyCount + 1
+      saveState()
+      renderCat()
+    })
+
+    petBtn.addEventListener('click', ()=>{
+      state.cat.mood = Math.min(100, state.cat.mood + 8)
+      addMessage(state.cat.name + ' daha mutlu oldu! 🐱', 'bot')
+      saveState(); renderCat()
+    })
+
+    renameBtn.addEventListener('click', ()=>{
+      const newName = prompt('Kedine yeni ismi gir:','Minnoş')
+      if(newName) { state.cat.name = newName; saveState(); renderCat() }
+    })
+
+    // Günlük reset (basit mantık: lokal saat 00:00'da sıfırlama) — prod'da backend ile yapın
+    let lastDay = localStorage.getItem('lastDay') || new Date().toDateString()
+    if(lastDay !== new Date().toDateString()){ state.dailyCount = 0; localStorage.setItem('lastDay', new Date().toDateString()) }
+
+    // İlk render
+    renderCat()
+
+    // TODO: Gerçek entegrasyon için:
+    // - Backend: /api/chat POST (message, userId) => OpenAI çağrısı
+    // - Auth & DB: Firebase Authentication + Firestore
+    // - Ödeme: Stripe veya iyzico ile Premium yönetimi
+  </script>
+</body>
+</html>
