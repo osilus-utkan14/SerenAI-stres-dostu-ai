@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SerenAI | Zihinsel Dengen İçin Dijital Rehber</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(160deg, #dbeafe 0%, #f0f9ff 100%);
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding: 40px 0 10px 0;
+    }
+    h1 {
+      font-size: 2.8rem;
+      color: #1e3a8a;
+    }
+    p {
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 15px auto;
+      line-height: 1.6;
+    }
+    button {
+      margin-top: 25px;
+      padding: 15px 35px;
+      font-size: 1.1rem;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    footer {
+      margin-top: 80px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌿 SerenAI</h1>
+    <p>Modern hayatın zihinsel yükünü hafifletmek için tasarlanmış empatik bir yapay zekâ asistanı.</p>
+    <p>Üniversite, iş ve günlük stresle başa çıkmakta zorlanan kullanıcılar, SerenAI ile konuşarak rahatlayabilir ve farkındalık kazanabilir.</p>
+    <button onclick="alert('Sohbet özelliği yakında aktif olacak 💬')">💬 Sohbete Başla</button>
+  </header>
+
+  <footer>
+    <p>© 2025 SerenAI — Duygularını ifade et, zihnine nefes aldır.</p>
+  </footer>
+</body>
+</html>
