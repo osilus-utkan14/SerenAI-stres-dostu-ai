@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SerenAI | Mutlu Kedi Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin:0; padding:0;
+    background: linear-gradient(160deg, #dbeafe, #f0f9ff);
+    color: #1e293b;
+    text-align: center;
+  }
+  header { padding: 40px 20px; }
+  h1 { font-size: 3rem; color:#1e3a8a; }
+  #loginForm { margin:20px auto; max-width:300px; }
+  input { width: 100%; padding:10px; margin:5px 0; border-radius:8px; border:1px solid #ccc; }
+  button { padding:10px 20px; border:none; border-radius:10px; background:#2563eb; color:white; cursor:pointer; transition:0.3s; }
+  button:hover { background:#1d4ed8; transform: scale(1.05); }
+
+  #kedi-container { margin-top:40px; display:none; }
+  #kedi { width:150px; display:block; margin:20px auto; transition:0.3s; }
+  #happiness-bar { height:20px; width:150px; background:#eee; border-radius:10px; margin:auto; }
+  #happiness-fill { height:100%; width:0%; background:#facc15; border-radius:10px; transition:0.5s; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 SerenAI Mutlu Kedi</h1>
+  <p>Giriş yap ve kedini mutlu et! Pozitif aktivitelerle kedinin mutluluğu artar.</p>
+</header>
+
+<div id="loginForm">
+  <input type="text" id="username" placeholder="Kullanıcı Adı">
+  <button id="loginBtn">Giriş Yap</button>
+</div>
+
+<div id="kedi-container">
+  <img id="kedi" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="kedi">
+  <div id="happiness-bar">
+    <div id="happiness-fill"></div>
+  </div>
+  <button id="positivity-btn">Pozitif Aktivite</button>
+</div>
+
+<script>
+  let happinessScore = 0;
+  const fill = document.getElementById('happiness-fill');
+  const kedi = document.getElementById('kedi');
+  const btn = document.getElementById('positivity-btn');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginForm = document.getElementById('loginForm');
+  const kediContainer = document.getElementById('kedi-container');
+
+  function updateKedi(){
+    fill.style.width = happinessScore + '%';
+    if(happinessScore < 30){
+      kedi.style.transform = 'translateY(0)';
+      kedi.style.opacity = '0.7';
+    } else if(happinessScore < 70){
+      kedi.style.transform = 'translateY(-10px)';
+      kedi.style.opacity = '1';
+    } else {
+      kedi.style.transform = 'translateY(-20px)';
+      kedi.style.transition = 'transform 0.5s';
+    }
+  }
+
+  btn.addEventListener('click', ()=>{
+    if(happinessScore < 100) happinessScore += 10;
+    localStorage.setItem('happinessScore', happinessScore);
+    updateKedi();
+  });
+
+  loginBtn.addEventListener('click', ()=>{
+    const username = document.getElementById('username').value.trim();
+    if(username){
+      localStorage.setItem('username', username);
+      happinessScore = parseInt(localStorage.getItem('happinessScore')) || 0;
+      loginForm.style.display = 'none';
+      kediContainer.style.display = 'block';
+      updateKedi();
+    } else alert('Kullanıcı adı giriniz!');
+  });
+</script>
+
+</body>
+</html>
